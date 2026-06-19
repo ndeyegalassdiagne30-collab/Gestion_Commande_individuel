@@ -2,19 +2,20 @@
 require_once ROOT."/config/config.php";
 
 function listerClient(){
-    $sql = "SELECT * FROM `client` ORDER BY id_client DESC";
+    $sql = "SELECT * FROM client ORDER BY id_client DESC";
     return executeSelect($sql);
 }
 
-function ajoutClient($nom, $prenom, $telephone, $email, $adresse){
-    $sql = "INSERT INTO client(nom, prenom, telephone, email, adresse)
-            VALUES (:nom, :prenom, :telephone, :email, :adresse)";
+function ajoutClient($nom, $prenom, $telephone, $email, $adresse, $photo = null){
+    $sql = "INSERT INTO client(nom, prenom, telephone, email, adresse, photo)
+            VALUES (:nom, :prenom, :telephone, :email, :adresse, :photo)";
     $data = [
-        'nom'       => $nom,
-        'prenom'    => $prenom,
+        'nom' => $nom,
+        'prenom' => $prenom,
         'telephone' => $telephone,
-        'email'     => $email,
-        'adresse'   => $adresse
+        'email' => $email,
+        'adresse' => $adresse,
+        'photo' => $photo
     ];
     return executeUpdate($sql, $data);
 }
@@ -29,23 +30,22 @@ function deleteClient($id){
     return executeUpdate($sqlClient, ['id' => $id]);
 }
 
-function updateClient($id, $nom, $prenom, $telephone, $email, $adresse){
-    $sql = "UPDATE client 
-            SET nom = :nom,
-                prenom = :prenom,
-                telephone = :telephone,
-                email = :email,
-                adresse = :adresse
-            WHERE id_client = :id";
-    $data = [
-        'id'        => $id,
-        'nom'       => $nom,
-        'prenom'    => $prenom,
-        'telephone' => $telephone,
-        'email'     => $email,
-        'adresse'   => $adresse
-    ];
+function updateClient($id, $nom, $prenom, $telephone, $email, $adresse, $photo = null){
+    if($photo !== null){
+        $sql = "UPDATE client SET nom=:nom, prenom=:prenom, telephone=:telephone,
+                email=:email, adresse=:adresse, photo=:photo WHERE id_client=:id";
+        $data = compact('id','nom','prenom','telephone','email','adresse','photo');
+    } else {
+        $sql = "UPDATE client SET nom=:nom, prenom=:prenom, telephone=:telephone,
+                email=:email, adresse=:adresse WHERE id_client=:id";
+        $data = compact('id','nom','prenom','telephone','email','adresse');
+    }
     return executeUpdate($sql, $data);
+}
+
+function getClientByEmail(string $email): array|false {
+    $sql = "SELECT * FROM client WHERE email = :email";
+    return executeSelect($sql, ['email' => $email], true);
 }
 
 function getClientById($id){

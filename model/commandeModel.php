@@ -10,11 +10,19 @@ function getAllCommandes(){
 }
 
 function getCommandeById($id){
-    $sql = "SELECT c.*, cl.nom, cl.prenom 
+    $sql = "SELECT c.*, cl.nom, cl.prenom, cl.telephone, cl.email, cl.adresse
             FROM commande c
             JOIN client cl ON c.id_client = cl.id_client
             WHERE c.id_commande = :id";
     return executeSelect($sql, ["id"=>$id], true);
+}
+
+function getLignesCommande($id_commande){
+    $sql = "SELECT pc.*, p.reference, p.libelle
+            FROM produit_commande pc
+            JOIN produit p ON pc.id_produit = p.id_produit
+            WHERE pc.id_commande = :id_commande";
+    return executeSelect($sql, ["id_commande" => $id_commande]);
 }
 
 function getClientByTelephone($telephone){
@@ -35,20 +43,16 @@ function getProduitByReference($reference){
 function addCommande($id_client, $montant_total, $description, array $panier){
 
     // 1. Ajouter la commande
-    $sqlCommande = "INSERT INTO commande 
-                    (id_client, date_commande, montant_total, statut, description) 
-                    VALUES 
-                    (:id_client, CURDATE(), :montant_total, 'NONSOLDE', :description)";
+    $sqlCommande = "INSERT INTO commande
+                    (id_client, date_commande, montant_total, statut, description)
+                    VALUES
+                    (:id_client, CURRENT_DATE, :montant_total, 'NON SOLDEE', :description)";
 
-    executeUpdate($sqlCommande, [
+    $id_commande = executeInsert($sqlCommande, [
         "id_client"     => $id_client,
         "montant_total" => $montant_total,
         "description"   => $description
     ]);
-
-    // 2. Récupérer l'id de la dernière commande
-    $pdo = getPDO();
-    $id_commande = $pdo->lastInsertId();
 
     // 3. Ajouter les produits de la commande
     foreach($panier as $item){

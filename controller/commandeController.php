@@ -1,12 +1,12 @@
 <?php
-session_start();
 require_once ROOT."/model/commandeModel.php";
+auth();
 
 if(!isset($_SESSION["commande"])){
     $_SESSION["commande"] = [
-        "client"  => null,
+        "client" => null,
         "produit" => null,
-        "panier"  => []
+        "panier" => []
     ];
 }
 
@@ -14,18 +14,18 @@ $liste = function(){
     $commandes = getAllCommandes();
     $total_commandes = countTable("commande");
     loadView("commande/liste", [
-        "commandes"        => $commandes,
+        "commandes" => $commandes,
         "total_commandes"  => $total_commandes
     ]);
 };
 
 $ajout = function(){
-    $client       = $_SESSION["commande"]["client"];
-    $produit      = $_SESSION["commande"]["produit"];
-    $panier       = $_SESSION["commande"]["panier"];
-    $erreur_client  = $_SESSION["erreur_client"] ?? null;
+    $client = $_SESSION["commande"]["client"];
+    $produit = $_SESSION["commande"]["produit"];
+    $panier = $_SESSION["commande"]["panier"];
+    $erreur_client = $_SESSION["erreur_client"] ?? null;
     $erreur_produit = $_SESSION["erreur_produit"] ?? null;
-    $erreur_qte     = $_SESSION["erreur_qte"] ?? null;
+    $erreur_qte = $_SESSION["erreur_qte"] ?? null;
 
     // Nettoyer les erreurs après lecture
     unset($_SESSION["erreur_client"], $_SESSION["erreur_produit"], $_SESSION["erreur_qte"]);
@@ -37,13 +37,13 @@ $ajout = function(){
     }
 
     loadView("commande/ajout", [
-        "client"          => $client,
-        "produit"         => $produit,
-        "panier"          => $panier,
-        "total"           => $total,
-        "erreur_client"   => $erreur_client,
-        "erreur_produit"  => $erreur_produit,
-        "erreur_qte"      => $erreur_qte
+        "client" => $client,
+        "produit" => $produit,
+        "panier"=> $panier,
+        "total" => $total,
+        "erreur_client" => $erreur_client,
+        "erreur_produit"=> $erreur_produit,
+        "erreur_qte" => $erreur_qte
     ]);
 };
 
@@ -139,11 +139,11 @@ $ajouterAuPanier = function(){
                 if(!$trouve){
                     $_SESSION["commande"]["panier"][] = [
                         "id_produit" => $produit["id_produit"],
-                        "reference"  => $produit["reference"],
-                        "libelle"    => $produit["libelle"],
-                        "prix"       => (float)$produit["prix"],
-                        "quantite"   => $qte,
-                        "stock"      => $produit["stock"]
+                        "reference" => $produit["reference"],
+                        "libelle" => $produit["libelle"],
+                        "prix" => (float)$produit["prix"],
+                        "quantite" => $qte,
+                        "stock" => $produit["stock"]
                     ];
                 }
 
@@ -193,16 +193,54 @@ $enregistrer = function(){
     redirectTo("commande", "liste");
 };
 
+$detail = function(){
+    $id = isset($_GET["id"]) ? (int)$_GET["id"] : 0;
+
+    if($id <= 0){
+        redirectTo("commande", "liste");
+        return;
+    }
+
+    $commande = getCommandeById($id);
+    if(!$commande){
+        redirectTo("commande", "liste");
+        return;
+    }
+
+    $lignes = getLignesCommande($id);
+
+    loadView("commande/detail", [
+        "commande" => $commande,
+        "lignes"   => $lignes
+    ]);
+};
+
+$mes_commandes = function(){
+    $idClient = $_SESSION["user"]["id_client"] ?? null;
+    if(!$idClient){
+        loadView("commande/mes_commandes", ["commandes" => [], "total" => 0]);
+        return;
+    }
+    $sql = "SELECT * FROM commande WHERE id_client = :id ORDER BY date_commande DESC";
+    $commandes = executeSelect($sql, ["id" => $idClient]);
+    loadView("commande/mes_commandes", [
+        "commandes" => $commandes,
+        "total" => count($commandes)
+    ]);
+};
+
 $actions = [
-    "liste"            => $liste,
-    "ajout"            => $ajout,
+    "liste" => $liste,
+    "mes_commandes" => $mes_commandes,
+    "ajout" => $ajout,
+    "detail" => $detail,
     "rechercherClient" => $rechercherClient,
     "rechercherProduit"=> $rechercherProduit,
     "ajouterAuPanier"  => $ajouterAuPanier,
-    "retirerDuPanier"  => $retirerDuPanier,
-    "enregistrer"      => $enregistrer,
-    "modifier"         => $modifier ?? function(){ echo "Je modifie une commande"; },
-    "supprimer"        => $supprimer ?? function(){ echo "Je supprime une commande"; }
+    "retirerDuPanier" => $retirerDuPanier,
+    "enregistrer" => $enregistrer,
+    "modifier" => function(){ echo "Je modifie une commande"; },
+    "supprimer" => function(){ echo "Je supprime une commande"; }
 ];
 
 $action = $_REQUEST["action"] ?? "liste";

@@ -1,6 +1,7 @@
 <?php
 require_once ROOT."/model/clientModel.php";
 require_once ROOT."/config/validator.php";
+auth();
 
 $liste = function(){
     $clients = listerClient();
@@ -13,29 +14,29 @@ $liste = function(){
 
 $ajout = function(){
     $errors = [];
-    $old = [];
-    
+    $old    = [];
+
     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add-client'])){
         $errors = validDataClient($_POST);
-        
+
+        // Validation photo (facultative)
+        if(!empty($_FILES['photo']['name'])){
+            $errors = array_merge($errors, validDataImage($_FILES['photo']));
+        }
+
         if(validate($errors)){
+            $photo = uploadPhoto($_FILES['photo'] ?? ['error' => UPLOAD_ERR_NO_FILE]);
             ajoutClient(
-                $_POST['nom'],
-                $_POST['prenom'],
-                $_POST['telephone'],
-                $_POST['email'],
-                $_POST['adresse']
+                $_POST['nom'], $_POST['prenom'],
+                $_POST['telephone'], $_POST['email'],
+                $_POST['adresse'], $photo
             );
             redirectTo("client", "liste");
         }
         $old = $_POST;
     }
-    
-    loadView("client/ajout", [
-        "errors" => $errors,
-        "client" => null,
-        "old" => $old
-    ]);
+
+    loadView("client/ajout", ["errors" => $errors, "client" => null, "old" => $old]);
 };
 
 $modifier = function(){
@@ -55,21 +56,23 @@ $modifier = function(){
     
     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update-client'])){
         $errors = validDataClient($_POST, $id);
-        
+
+        if(!empty($_FILES['photo']['name'])){
+            $errors = array_merge($errors, validDataImage($_FILES['photo']));
+        }
+
         if(validate($errors)){
+            $photo = uploadPhoto($_FILES['photo'] ?? ['error' => UPLOAD_ERR_NO_FILE]);
             updateClient(
                 $id,
-                $_POST['nom'],
-                $_POST['prenom'],
-                $_POST['telephone'],
-                $_POST['email'],
-                $_POST['adresse']
+                $_POST['nom'], $_POST['prenom'],
+                $_POST['telephone'], $_POST['email'],
+                $_POST['adresse'], $photo
             );
             redirectTo("client", "liste");
         }
-        
-        // En cas d'erreur, on garde les données POST
-        $client = $_POST;
+
+        $client = array_merge($client, $_POST);
     }
     
     loadView("client/ajout", [

@@ -16,37 +16,50 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date commande</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant total</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">N°</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <?php foreach ($commandes as $commande): ?>
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                            <?=$commande["description"] ?? "Pas de description"?>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            #<?= $commande["id_commande"] ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <?= htmlspecialchars($commande["prenom"] . " " . $commande["nom"]) ?>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            <?=$commande["date_commande"]?>
+                            <?= $commande["date_commande"] ?>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            <?=$commande["montant_total"]?>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <?php
+                            $s = $commande["statut"];
+                            $c = ($s === 'SOLDEE') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                            ?>
+                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold <?= $c ?>">
+                                <?= htmlspecialchars($s) ?>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            <?=$commande["statut"]?>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
+                            <?= number_format($commande["montant_total"], 0, ',', ' ') ?> F CFA
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            <?=$commande["prenom"] . " " . $commande["nom"]?>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <a href="<?= path("commande","detail") . "&id=" . $commande["id_commande"] ?>"
+                               class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 text-xs font-medium transition">
+                                Voir le detail
+                            </a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
 
                     <?php if(empty($commandes)): ?>
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                             Aucune commande trouvée.
                             <a href="<?=path("commande","ajout")?>" class="text-indigo-600 hover:underline">
                                 Créez la première commande

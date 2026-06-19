@@ -1,6 +1,7 @@
 <?php
 require_once ROOT."/model/produitModel.php";
 require_once ROOT."/config/validator.php";
+auth();
 
 $liste = function(){
     $produits = listerProduit();
@@ -87,8 +88,8 @@ $supprimer = function(){
 };
 
 $actions = [
-    "liste"     => $liste,
-    "new"       => $new,
+    "liste" => $liste,
+    "new" => $new,
     "modifier"  => $modifier,
     "supprimer" => $supprimer
 ];

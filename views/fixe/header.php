@@ -26,6 +26,6 @@
                 <a href="<?= WEBROOT ?>?controller=commande&action=lister" class="block py-2.5 px-4 rounded hover:bg-indigo-800 transition">Commandes</a>
             </nav>
             <div class="p-4 border-t border-indigo-800 text-sm text-indigo-300">
-                © 2024 Group Commandes 
+                
             </div>
         </aside>
